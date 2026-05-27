@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 
     const EditProductModal = ({
-    isOpen,
-    onClose,
-    product,
-    onUpdate,
+      isOpen,
+      onClose,
+      product,
+      onUpdate,
+      categories,
     }) => {
 
     if (!isOpen || !product) return null;
@@ -25,7 +26,37 @@ import { useState, useEffect } from "react";
     }
     }, [product]);
 
-  return (
+        const handleSubmit = (e) => {
+
+        e.preventDefault();
+
+        const stockNumber = Number(formData.stock);
+
+        let status = "Available";
+
+        if (stockNumber <= 0) {
+
+            status = "Out of Stock";
+
+        } else if (stockNumber <= 10) {
+
+            status = "Low Stock";
+
+        }
+
+        onUpdate({
+            id: product.id,
+            name: formData.name,
+            category: formData.category,
+            stock: stockNumber,
+            status,
+        });
+
+        onClose();
+
+        };
+
+ return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
       <div className="bg-white w-full max-w-lg rounded-2xl p-6 shadow-2xl">
@@ -47,7 +78,10 @@ import { useState, useEffect } from "react";
         </div>
 
         {/* FORM */}
-        <form className="space-y-5">
+        <form
+        onSubmit={handleSubmit}
+        className="space-y-5"
+        >
 
           {/* PRODUCT NAME */}
           <div>
@@ -57,27 +91,53 @@ import { useState, useEffect } from "react";
             </label>
 
             <input
-              type="text"
-              defaultValue={product.name}
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            type="text"
+            value={formData.name}
+            onChange={(e) =>
+                setFormData({
+                ...formData,
+                name: e.target.value,
+                })
+            }
+            className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
           </div>
 
-          {/* CATEGORY */}
-          <div>
+  {/* CATEGORY */}
+    <div>
 
-            <label className="block text-sm font-medium text-slate-700 mb-2">
-              Category
-            </label>
+      <label className="block text-sm font-medium text-slate-700 mb-2">
+        Category
+      </label>
 
-            <input
-              type="text"
-              defaultValue={product.category}
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+      <select
+        value={formData.category}
+        onChange={(e) =>
+          setFormData({
+            ...formData,
+            category: e.target.value,
+          })
+        }
+        className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+      >
 
-          </div>
+        <option value="">
+          Select Category
+        </option>
+
+        {categories?.map((category) => (
+          <option
+            key={category.id}
+            value={category.name}
+          >
+            {category.name}
+          </option>
+        ))}
+
+      </select>
+
+    </div>
 
           {/* STOCK */}
           <div>
@@ -87,9 +147,15 @@ import { useState, useEffect } from "react";
             </label>
 
             <input
-              type="number"
-              defaultValue={product.stock}
-              className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            type="number"
+            value={formData.stock}
+            onChange={(e) =>
+                setFormData({
+                ...formData,
+                stock: e.target.value,
+                })
+            }
+            className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
 
           </div>

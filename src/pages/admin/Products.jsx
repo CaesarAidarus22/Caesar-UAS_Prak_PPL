@@ -1,78 +1,190 @@
 import { Plus, Search, Pencil, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../../services/api";
+
 import AddProductModal from "../../components/admin/AddProductModal";
 import EditProductModal from "../../components/admin/EditProductModal";
 import DeleteModal from "../../components/admin/DeleteModal";
 
 const Products = () => {
 
-    const [isModalOpen, setIsModalOpen] = useState(false);
+  const [products, setProducts] = useState([]);
 
-    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [categories, setCategories] = useState([]);
 
-    const [selectedProduct, setSelectedProduct] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-    const [searchTerm, setSearchTerm] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-    const handleEdit = (product) => {
-        setSelectedProduct(product);
-        setIsEditModalOpen(true);
-    };
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
-    const handleDelete = (product) => {
-        setSelectedProduct(product);
-        setIsDeleteModalOpen(true);
-    };
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
-const [products, setProducts] = useState([
+  useEffect(() => {
+
+    fetchProducts();
+    fetchCategories();
     
-    {
-      id: 1,
-      name: "Laptop ASUS VivoBook",
-      category: "Electronics",
-      stock: 48,
-      status: "Available",
-    },
-    {
-      id: 2,
-      name: "Mouse Logitech",
-      category: "Accessories",
-      stock: 7,
-      status: "Low Stock",
-    },
-    {
-      id: 3,
-      name: "Mechanical Keyboard",
-      category: "Accessories",
-      stock: 0,
-      status: "Out of Stock",
-    },
-    ]);
 
-    const filteredProducts = products.filter((product) =>
+  }, []);
+
+  // FETCH CATEGORIES
+  const fetchCategories = async () => {
+
+    try {
+
+      const response = await api.get(
+        "/categories"
+      );
+
+      console.log(response.data);
+
+      setCategories(
+        response.data.data || response.data
+      );
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
+
+  // FETCH PRODUCTS
+  const fetchProducts = async () => {
+
+    try {
+
+      const token = localStorage.getItem("token");
+
+      const response = await api.get("/products", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      setProducts(response.data);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
+
+  // ADD PRODUCT
+  const addProductToDatabase = async (productData) => {
+
+    try {
+
+      const token = localStorage.getItem("token");
+
+      await api.post(
+        "/products",
+        productData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      fetchProducts();
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
+
+  // UPDATE PRODUCT
+  const updateProduct = async (updatedProduct) => {
+
+    try {
+
+      const token = localStorage.getItem("token");
+
+      await api.put(
+        `/products/${updatedProduct.id}`,
+        updatedProduct,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      fetchProducts();
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
+
+  // DELETE PRODUCT
+  const deleteProduct = async () => {
+
+    if (!selectedProduct) return;
+
+    try {
+
+      const token = localStorage.getItem("token");
+
+      await api.delete(
+        `/products/${selectedProduct.id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      fetchProducts();
+
+      setIsDeleteModalOpen(false);
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+  };
+
+  // EDIT BUTTON
+  const handleEdit = (product) => {
+
+    setSelectedProduct(product);
+
+    setIsEditModalOpen(true);
+
+  };
+
+  // DELETE BUTTON
+  const handleDelete = (product) => {
+
+    setSelectedProduct(product);
+
+    setIsDeleteModalOpen(true);
+
+  };
+
+  // SEARCH FILTER
+  const filteredProducts = products.filter((product) =>
     product.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const handleAddProduct = (newProduct) => {
-
-    const productWithStatus = {
-        ...newProduct,
-        id: products.length + 1,
-        status:
-        newProduct.stock > 10
-            ? "Available"
-            : newProduct.stock > 0
-            ? "Low Stock"
-            : "Out of Stock",
-    };
-
-    setProducts([...products, productWithStatus]);
-
-    };
+  );
 
   return (
+
     <div>
 
       {/* HEADER */}
@@ -92,8 +204,8 @@ const [products, setProducts] = useState([
 
         {/* ADD BUTTON */}
         <button
-        onClick={() => setIsModalOpen(true)}
-        className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-5 py-3 rounded-xl font-medium transition"
+          onClick={() => setIsModalOpen(true)}
+          className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-5 py-3 rounded-xl font-medium transition"
         >
 
           <Plus size={20} />
@@ -114,13 +226,13 @@ const [products, setProducts] = useState([
             className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
           />
 
-        <input
+          <input
             type="text"
             placeholder="Search product..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+          />
 
         </div>
 
@@ -150,11 +262,11 @@ const [products, setProducts] = useState([
                 </th>
 
                 <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
-                Status
+                  Status
                 </th>
 
                 <th className="text-left px-6 py-4 text-sm font-semibold text-slate-600">
-                Actions
+                  Actions
                 </th>
 
               </tr>
@@ -182,50 +294,50 @@ const [products, setProducts] = useState([
                     {product.stock}
                   </td>
 
-                    <td className="px-6 py-4">
+                  <td className="px-6 py-4">
 
                     <span
-                        className={`px-3 py-1 rounded-full text-sm font-medium
-                        ${
+                      className={`px-3 py-1 rounded-full text-sm font-medium
+                      ${
                         product.status === "Available"
-                            ? "bg-green-100 text-green-700"
-                            : product.status === "Low Stock"
-                            ? "bg-yellow-100 text-yellow-700"
-                            : "bg-red-100 text-red-700"
-                        }`}
+                          ? "bg-green-100 text-green-700"
+                          : product.status === "Low Stock"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-red-100 text-red-700"
+                      }`}
                     >
-                        {product.status}
-                </span>
+                      {product.status}
+                    </span>
 
-                    </td>
+                  </td>
 
-                    <td className="px-6 py-4">
+                  <td className="px-6 py-4">
 
                     <div className="flex items-center gap-3">
 
-                        {/* EDIT */}
-                        <button
+                      {/* EDIT */}
+                      <button
                         onClick={() => handleEdit(product)}
                         className="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition"
-                        >
+                      >
 
                         <Pencil size={18} />
 
-                        </button>
+                      </button>
 
-                        {/* DELETE */}
-                            <button
-                            onClick={() => handleDelete(product)}
-                            className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
-                            >
+                      {/* DELETE */}
+                      <button
+                        onClick={() => handleDelete(product)}
+                        className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition"
+                      >
 
                         <Trash2 size={18} />
 
-                        </button>
+                      </button>
 
                     </div>
 
-                    </td>
+                  </td>
 
                 </tr>
 
@@ -238,26 +350,34 @@ const [products, setProducts] = useState([
         </div>
 
       </div>
-            <AddProductModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            onAdd={handleAddProduct}
-            />
 
-            <EditProductModal
-            isOpen={isEditModalOpen}
-            onClose={() => setIsEditModalOpen(false)}
-            product={selectedProduct}
-            />
+      {/* MODALS */}
+      <AddProductModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onAddProduct={addProductToDatabase}
+        categories={categories}
+      />
 
-            <DeleteModal
-            isOpen={isDeleteModalOpen}
-            onClose={() => setIsDeleteModalOpen(false)}
-            product={selectedProduct}
-            />
-        </div>
-    
+      <EditProductModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        product={selectedProduct}
+        onUpdate={updateProduct}
+        categories={categories}
+      />
+
+      <DeleteModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        product={selectedProduct}
+        onDelete={deleteProduct}
+      />
+
+    </div>
+
   );
+
 };
 
 export default Products;

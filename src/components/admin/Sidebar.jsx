@@ -4,11 +4,28 @@ import {
   Tags,
   Users,
   Settings,
+  LogOut,
 } from "lucide-react";
 
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const Sidebar = () => {
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+  navigate("/login");
+
+};
+
+    const user = JSON.parse(
+    localStorage.getItem("user")
+    );
+
   const menuItems = [
     {
       name: "Dashboard",
@@ -90,15 +107,15 @@ const Sidebar = () => {
 
           {/* AVATAR */}
           <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-lg font-bold">
-            CA
+            {user?.initials || "AD"}
           </div>
 
           {/* USER INFO */}
           <div>
 
-            <h3 className="font-semibold">
-              Caesar Aidarus
-            </h3>
+        <h3 className="font-semibold">
+        {user?.fullName || "Administrator"}
+        </h3>
 
             <p className="text-sm text-slate-400">
               Administrator
@@ -107,7 +124,13 @@ const Sidebar = () => {
           </div>
 
         </div>
-
+        <button
+        onClick={handleLogout}
+        className="w-full mt-4 flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white py-3 rounded-xl transition"
+        >
+        <LogOut size={18} />
+        Logout
+        </button>
       </div>
 
     </aside>

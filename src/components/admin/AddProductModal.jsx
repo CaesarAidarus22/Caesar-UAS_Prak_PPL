@@ -1,11 +1,18 @@
 import { useState } from "react";
 
-const AddProductModal = ({ isOpen, onClose, onAdd }) => {
+const AddProductModal = ({
+  isOpen,
+  onClose,
+  onAddProduct,
+  categories,
+}) => {
+
+
  if (!isOpen) return null;
 
     const [formData, setFormData] = useState({
     name: "",
-    category: "Electronics",
+    category: "",
     stock: "",
     });
 
@@ -14,15 +21,26 @@ const AddProductModal = ({ isOpen, onClose, onAdd }) => {
 const handleSubmit = (e) => {
   e.preventDefault();
 
-  onAdd({
+    const stockNumber = Number(formData.stock);
+
+    let status = "Available";
+
+    if (stockNumber <= 0) {
+    status = "Out of Stock";
+    } else if (stockNumber <= 10) {
+    status = "Low Stock";
+    }
+
+    onAddProduct({
     name: formData.name,
     category: formData.category,
-    stock: Number(formData.stock),
-  });
+    stock: stockNumber,
+    status,
+    });
 
   setFormData({
     name: "",
-    category: "Electronics",
+    category: "",
     stock: "",
   });
 
@@ -92,9 +110,20 @@ const handleSubmit = (e) => {
             }
             className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option>Electronics</option>
-              <option>Accessories</option>
-              <option>Furniture</option>
+            <option value="">
+              Select Category
+            </option>
+
+            {categories.map((category) => (
+
+              <option
+                key={category.id}
+                value={category.name}
+              >
+                {category.name}
+              </option>
+
+            ))}
             </select>
 
           </div>

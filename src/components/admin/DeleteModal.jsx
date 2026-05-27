@@ -1,4 +1,10 @@
-const DeleteModal = ({ isOpen, onClose, product }) => {
+const DeleteModal = ({
+  isOpen,
+  onClose,
+  product,
+  onDelete,
+}) => {
+
   if (!isOpen || !product) return null;
 
   return (
@@ -42,9 +48,10 @@ const DeleteModal = ({ isOpen, onClose, product }) => {
             Cancel
           </button>
 
-          <button
-            className="px-5 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium transition"
-          >
+        <button
+        onClick={onDelete}
+        className="px-5 py-3 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium transition"
+        >
             Delete
           </button>
 
